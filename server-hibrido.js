@@ -16,14 +16,22 @@ const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ["http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
-});
+const express");
+const cors =();
+
+// Configuração o Express, adicione = require("express require("cors");
+const app = express de CORS
+app.useclean-helmet-frontend URL do frontend(cors({
+  origin: [
+    "https://.onrender.com", // no Render
+    "http://localhost:3000" // útil para testes locais
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials---
+
+## 📌 Passos: true
+}));
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -630,5 +638,6 @@ function gracefulShutdown(signal) {
     process.exit(1);
   }, 10000);
 }
+
 
 module.exports = { app, server, io, logger };
