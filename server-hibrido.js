@@ -17,24 +17,6 @@ const cron = require('node-cron');
 const moment = require('moment');
 
 const app = express();
-const express = require("express");
-const cors = require("cors");
- de CORS
-app.use(cors({
-  origin URL do frontendconst app = express();
-
-// Configuração: [
-    "https://clean-helmet-frontend.onrender.com", // no Render
-    "http://localhost ],
-  methods: ["---
-
-## 📌 Passos
-
-1. Abra o arquivo:3000" // útil para testes locais
- GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -651,4 +633,5 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
