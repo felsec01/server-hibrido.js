@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 Clean Helmet - Debug Panel COMPLETO v5.0</title>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <!-- Socket.IO (opcional) -->
+  <script>
+    const socketScript = document.createElement('script');
+    socketScript.src = '/socket.io/socket.io.js';
+    socketScript.onerror = () => console.warn('Socket.IO não disponível');
+    socketScript.onload = () => console.log('Socket.IO carregado');
+    document.head.appendChild(socketScript);
+  </script>
+  
+  <style>
+    :root {
+      --primary: #00d1ff;
+      --success: #00ff88;
+      --error: #ff4444;
+      --warning: #ffaa00;
+      --bg-dark: #121212;
+      --bg-card: #1c1c1c;
+      --bg-input: #252525;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-muted: #999999;
+      --border: rgba(0, 209, 255, 0.2);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--bg-card) 0%, #2a2a2a 100%);
+      padding: 2rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 209, 255, 0.1);
+    }
+
+    .card-header {
+      background: var(--bg-input);
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      color: var(--primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .card-content {
+      padding: 1.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .btn:hover {
+      background: #0099cc;
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover {
+      background: #00cc66;
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: #333;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-large {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+
+    /* Status Indicators */
+    .status {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: help;
+      transition: var(--transition);
+      max-width: 200px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .status:hover {
+      transform: scale(1.05);
+      z-index: 10;
+      position: relative;
+    }
+
+    .status-success {
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .status-error {
+      background: rgba(255, 68, 68, 0.2);
+      color: var(--error);
+      border: 1px solid var(--error);
+      animation: pulse-error 2s infinite;
+    }
+
+    .status-warning {
+      background: rgba(255, 170, 0, 0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .status-pending {
+      background: rgba(0, 209, 255, 0.2);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      animation: pulse-pending 2s infinite;
+    }
+
+    @keyframes pulse-error {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(255, 68, 68, 0); }
+    }
+
+    @keyframes pulse-pending {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 209, 255, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(0, 209, 255, 0); }
+    }
+
+    /* Tooltip para status */
+    .status[title] {
+      position: relative;
+    }
+
+    .status[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: normal;
+      text-transform: none;
+      white-space: nowrap;
+      z-index: 1000;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 5px;
+    }
+
+    .status[title]:hover::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--bg-dark);
+      z-index: 1000;
+    }
+
+    /* Test Items */
+    .test-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .test-item:last-child {
+      border-bottom: none;
+    }
+
+    .test-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .test-description {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric {
+      background: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .metric:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Progress Bar */
+    .progress {
+      background: rgba(0, 209, 255, 0.1);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+      border-radius: 4px;
+    }
+
+    /* Logs */
+    .logs {
+      background: #000;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid #333;
+    }
+
+    .logs::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .logs::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    .logs::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    /* Action Bar */
+    .action-bar {
+      background: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* System Status */
+    .system-status {
+      background: var(--bg-card);
+      padding: 2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .system-status.loading {
+      border-color: var(--primary);
+      animation: pulse 2s infinite;
+    }
+
+    .system-status.success {
+      border-color: var(--success);
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    .system-status.error {
+      border-color: var(--error);
+      background: rgba(255, 68, 68, 0.05);
+    }
+
+    @keyframes pulse {
+      0%, 100% { border-color: var(--primary); }
+      50% { border-color: rgba(0, 209, 255, 0.5); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .action-bar {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 209, 255, 0.2);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>🔧 Clean Helmet Debug Panel</h1>
+    <p>Sistema Completo de Diagnóstico e Testes v5.0</p>
+  </div>
+
+  <div class="container">
+    <!-- System Status -->
+    <div id="systemStatus" class="system-status loading">
+      <div class="loading-spinner"></div>
+      <h2>Verificando Sistema...</h2>
+      <p>Aguarde enquanto carregamos e verificamos todos os componentes</p>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn btn-large btn-success" onclick="runAllTests()">
+        🚀 Executar Todos os Testes
+      </button>
+      <button class="btn btn-secondary" onclick="checkSystem()">
+        🔍 Verificar Sistema
+      </button>
+      <button class="btn btn-secondary" onclick="clearLogs()">
+        🗑️ Limpar Logs
+      </button>
+      <button class="btn btn-secondary" onclick="exportReport()">
+        📄 Exportar Relatório
+      </button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-value" id="testDuration">0s</div>
+        <div class="metric-label">Duração dos Testes</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="testsExecuted">0</div>
+        <div class="metric-label">Testes Executados</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="successRate">0%</div>
+        <div class="metric-label">Taxa de Sucesso</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="criticalIssues">0</div>
+        <div class="metric-label">Problemas Críticos</div>
+      </div>
+    </div>
+
+    <!-- Test Sections -->
+    <div class="grid grid-2">
+      <!-- Firebase Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔥 Firebase</div>
+          <div class="card-subtitle">Conectividade e autenticação</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">Inicialização</div>
+              <div class="test-description">SDK e configuração</div>
+            </div>
+            <span class="status status-pending" id="status-firebaseInit">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Autenticação</div>
+              <div class="test-description">Login e permissões</div>
+            </div>
+            <span class="status status-pending" id="status-firebaseAuth">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Database</div>
+              <div class="test-description">Realtime Database</div>
+            </div>
+            <span class="status status-pending" id="status-firebaseDb">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Credenciais</div>
+              <div class="test-description">API Keys e config</div>
+            </div>
+            <span class="status status-pending" id="status-firebaseCreds">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testFirebaseOnly()">🔥 Testar Firebase</button>
+        </div>
+      </div>
+
+      <!-- Backend Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚙️ Backend</div>
+          <div class="card-subtitle">Servidor e APIs</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">Health Check</div>
+              <div class="test-description">Status do servidor</div>
+            </div>
+            <span class="status status-pending" id="status-backendHealth">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">APIs</div>
+              <div class="test-description">Endpoints disponíveis</div>
+            </div>
+            <span class="status status-pending" id="status-backendApi">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Configuração</div>
+              <div class="test-description">Environment vars</div>
+            </div>
+            <span class="status status-pending" id="status-backendConfig">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Dependências</div>
+              <div class="test-description">Packages instalados</div>
+            </div>
+            <span class="status status-pending" id="status-backendDeps">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testBackendOnly()">⚙️ Testar Backend</button>
+        </div>
+      </div>
+
+      <!-- WebSocket Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🌐 WebSocket</div>
+          <div class="card-subtitle">Comunicação em tempo real</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">Socket.IO</div>
+              <div class="test-description">Library disponível</div>
+            </div>
+            <span class="status status-pending" id="status-socketIo">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Conexão</div>
+              <div class="test-description">Conectividade</div>
+            </div>
+            <span class="status status-pending" id="status-websocket">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Eventos</div>
+              <div class="test-description">Mensagens em tempo real</div>
+            </div>
+            <span class="status status-pending" id="status-websocketEvents">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Performance</div>
+              <div class="test-description">Latência e throughput</div>
+            </div>
+            <span class="status status-pending" id="status-websocketPerf">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testWebSocketOnly()">🌐 Testar WebSocket</button>
+        </div>
+      </div>
+
+      <!-- Security Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔐 Security</div>
+          <div class="card-subtitle">Segurança e credenciais</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">HTTPS</div>
+              <div class="test-description">Protocolo seguro</div>
+            </div>
+            <span class="status status-pending" id="status-https">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">API Keys</div>
+              <div class="test-description">Chaves expostas</div>
+            </div>
+            <span class="status status-pending" id="status-exposedKeys">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">CORS</div>
+              <div class="test-description">Cross-origin requests</div>
+            </div>
+            <span class="status status-pending" id="status-corsConfig">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Headers</div>
+              <div class="test-description">Security headers</div>
+            </div>
+            <span class="status status-pending" id="status-securityHeaders">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testSecurityOnly()">🔐 Testar Security</button>
+        </div>
+      </div>
+
+      <!-- JavaScript Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📜 JavaScript</div>
+          <div class="card-subtitle">Código e funcionalidades</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">Arquivo Principal</div>
+              <div class="test-description">Scripts carregados</div>
+            </div>
+            <span class="status status-pending" id="status-jsMain">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Funções</div>
+              <div class="test-description">Funções críticas</div>
+            </div>
+            <span class="status status-pending" id="status-jsFunctions">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Variáveis</div>
+              <div class="test-description">Variáveis globais</div>
+            </div>
+            <span class="status status-pending" id="status-jsGlobals">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Eventos</div>
+              <div class="test-description">Event listeners</div>
+            </div>
+            <span class="status status-pending" id="status-jsEvents">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testJavaScriptOnly()">📜 Testar JavaScript</button>
+        </div>
+      </div>
+
+      <!-- Performance Tests -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚡ Performance</div>
+          <div class="card-subtitle">Velocidade e otimização</div>
+        </div>
+        <div class="card-content">
+          <div class="test-item">
+            <div>
+              <div class="test-name">Load Time</div>
+              <div class="test-description">Tempo de carregamento</div>
+            </div>
+            <span class="status status-pending" id="status-loadTime">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Memória</div>
+              <div class="test-description">Uso de RAM</div>
+            </div>
+            <span class="status status-pending" id="status-memory">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">FPS</div>
+              <div class="test-description">Frames por segundo</div>
+            </div>
+            <span class="status status-pending" id="status-fps">Pendente</span>
+          </div>
+          <div class="test-item">
+            <div>
+              <div class="test-name">Recursos</div>
+              <div class="test-description">Assets carregados</div>
+            </div>
+            <span class="status status-pending" id="status-resources">Pendente</span>
+          </div>
+          <button class="btn btn-small" onclick="testPerformanceOnly()">⚡ Testar Performance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicações dos Status -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💡 Guia de Status</div>
+        <div class="card-subtitle">Entenda o que cada status significa</div>
+      </div>
+      <div class="card-content">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+          <div style="padding: 1rem; background: rgba(0, 255, 136, 0.1); border-radius: 8px; border-left: 4px solid var(--success);">
+            <strong style="color: var(--success);">✅ SUCESSO</strong><br>
+            <small>Componente funcionando perfeitamente</small>
+          </div>
+          <div style="padding: 1rem; background: rgba(255, 170, 0, 0.1); border-radius: 8px; border-left: 4px solid var(--warning);">
+            <strong style="color: var(--warning);">⚠️ AVISO</strong><br>
+            <small>Normal se não tiver servidor ou em desenvolvimento</small>
+          </div>
+          <div style="padding: 1rem; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid var(--error);">
+            <strong style="color: var(--error);">❌ ERRO</strong><br>
+            <small>Problema que precisa ser resolvido</small>
+          </div>
+          <div style="padding: 1rem; background: rgba(0, 209, 255, 0.1); border-radius: 8px; border-left: 4px solid var(--primary);">
+            <strong style="color: var(--primary);">🔵 PENDENTE</strong><br>
+            <small>Teste não executado ainda</small>
+          </div>
+        </div>
+        <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-input); border-radius: 8px;">
+          <strong>💡 Dica:</strong> Passe o mouse sobre qualquer status para ver:
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li><strong>Por que</strong> o teste não foi executado</li>
+            <li><strong>O que fazer</strong> para resolver</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs Section -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 Logs do Sistema</div>
+        <div class="card-subtitle">Logs em tempo real com timestamp</div>
+      </div>
+      <div class="card-content">
+        <div id="debugLogs" class="logs">
+          <div style="color: var(--primary);">[Sistema] Aguardando início dos testes...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sistema de Debug -->
+  <script src="debug-simples.js"></script>
+
+  <!-- Scripts da Interface -->
+  <script>
+    // Variáveis globais
+    let testStartTime = 0;
+    let testsCompleted = 0;
+    let totalTests = 0;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+      log('🚀 Debug Panel COMPLETO carregado', 'info');
+      
+      setTimeout(() => {
+        checkSystemStatus();
+      }, 1000);
+    });
+
+    // Verificar status do sistema
+    function checkSystemStatus() {
+      const statusEl = document.getElementById('systemStatus');
+      
+      if (typeof window.DebugSystemAdvanced !== 'undefined') {
+        statusEl.className = 'system-status success fade-in';
+        statusEl.innerHTML = `
+          <h2>✅ Sistema Pronto</h2>
+          <p>Todos os componentes carregados com sucesso</p>
+        `;
+        log('✅ Sistema de debug carregado com sucesso', 'success');
+        
+        const functions = Object.keys(window.DebugSystemAdvanced);
+        log(`📋 ${functions.length} funções disponíveis: ${functions.join(', ')}`, 'info');
+        
+      } else {
+        statusEl.className = 'system-status error fade-in';
+        statusEl.innerHTML = `
+          <h2>❌ Sistema Não Carregado</h2>
+          <p>Verifique se o arquivo debug-simples.js está na mesma pasta</p>
+        `;
+        log('❌ Sistema de debug não encontrado', 'error');
+      }
+    }
+
+    // Função de log
+    function log(message, type = 'info') {
+      const container = document.getElementById('debugLogs');
+      const timestamp = new Date().toLocaleTimeString();
+      
+      const colors = {
+        info: 'var(--primary)',
+        success: 'var(--success)',
+        error: 'var(--error)',
+        warning: 'var(--warning)'
+      };
+      
+      const logHtml = `<div style="color: ${colors[type]};">[${timestamp}] ${message}</div>`;
+      container.innerHTML += logHtml;
+      container.scrollTop = container.scrollHeight;
+      
+      console.log(`[${timestamp}] ${message}`);
+    }
+
+    // Atualizar status dos testes
+    function updateStatus(testId, status, extra = '') {
+      const element = document.getElementById(`status-${testId}`);
+      if (!element) return;
+      
+      element.className = `status status-${status}`;
+      element.textContent = status === 'success' ? 'Sucesso' : 
+                           status === 'error' ? 'Erro' : 
+                           status === 'warning' ? 'Aviso' : 'Pendente';
+      
+      if (extra) {
+        element.textContent += ` (${extra})`;
+      }
+    }
+
+    // Atualizar progresso
+    function updateProgress(percentage) {
+      const progressFill = document.getElementById('progressFill');
+      if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+      }
+    }
+
+    // Executar todos os testes
+    async function runAllTests() {
+      if (!window.DebugSystemAdvanced) {
+        alert('Sistema de debug não carregado!');
+        return;
+      }
+      
+      log('🚀 Iniciando bateria completa de testes...', 'info');
+      testStartTime = Date.now();
+      
+      try {
+        await window.DebugSystemAdvanced.runAllTestsAdvanced();
+        
+        const duration = Math.round((Date.now() - testStartTime) / 1000);
+        log(`🎉 Todos os testes concluídos em ${duration}s`, 'success');
+        
+      } catch (error) {
+        log(`❌ Erro durante os testes: ${error.message}`, 'error');
+      }
+    }
+
+    // Verificar sistema
+    function checkSystem() {
+      log('🔍 Verificando sistema...', 'info');
+      checkSystemStatus();
+    }
+
+    // Limpar logs
+    function clearLogs() {
+      document.getElementById('debugLogs').innerHTML = 
+        '<div style="color: var(--primary);">[Sistema] Logs limpos</div>';
+      
+      if (window.DebugSystemAdvanced) {
+        window.DebugSystemAdvanced.debugLogs = [];
+      }
+      
+      log('🗑️ Logs limpos', 'info');
+    }
+
+    // Exportar relatório
+    function exportReport() {
+      if (!window.DebugSystemAdvanced) {
+        alert('Sistema de debug não carregado!');
+        return;
+      }
+      
+      const report = {
+        timestamp: new Date().toISOString(),
+        logs: window.DebugSystemAdvanced.debugLogs,
+        metrics: {
+          duration: document.getElementById('testDuration').textContent,
+          executed: document.getElementById('testsExecuted').textContent,
+          successRate: document.getElementById('successRate').textContent,
+          issues: document.getElementById('criticalIssues').textContent
+        }
+      };
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], {
+        type: 'application/json'
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `clean-helmet-debug-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      log('📄 Relatório exportado com sucesso', 'success');
+    }
+
+    // Testes individuais
+    function testFirebaseOnly() {
+      if (window.DebugSystemAdvanced?.testFirebase) {
+        log('🔥 Executando testes Firebase...', 'info');
+        window.DebugSystemAdvanced.testFirebase();
+      }
+    }
+
+    function testBackendOnly() {
+      if (window.DebugSystemAdvanced?.testBackend) {
+        log('⚙️ Executando testes Backend...', 'info');
+        window.DebugSystemAdvanced.testBackend();
+      }
+    }
+
+    function testWebSocketOnly() {
+      if (window.DebugSystemAdvanced?.testWebSocketAdvanced) {
+        log('🌐 Executando testes WebSocket...', 'info');
+        window.DebugSystemAdvanced.testWebSocketAdvanced();
+      }
+    }
+
+    function testSecurityOnly() {
+      if (window.DebugSystemAdvanced?.testCredentialsAndSecurity) {
+        log('🔐 Executando testes Security...', 'info');
+        window.DebugSystemAdvanced.testCredentialsAndSecurity();
+      }
+    }
+
+    function testJavaScriptOnly() {
+      if (window.DebugSystemAdvanced?.testJavaScript) {
+        log('📜 Executando testes JavaScript...', 'info');
+        window.DebugSystemAdvanced.testJavaScript();
+      }
+    }
+
+    function testPerformanceOnly() {
+      if (window.DebugSystemAdvanced?.testPerformance) {
+        log('⚡ Executando testes Performance...', 'info');
+        window.DebugSystemAdvanced.testPerformance();
+      }
+    }
+
+    // Disponibilizar funções globalmente
+    window.updateStatus = updateStatus;
+    window.updateProgress = updateProgress;
+    window.log = log;
+  </script>
+</body>
+</html>

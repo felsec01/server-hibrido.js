@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧠 Clean Helmet - Sistema Completo Híbrido v5.0</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK (Mantido) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <!-- 🆕 BACKEND v5.0 INTEGRATION -->
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- 🆕 INTEGRAÇÃO BACKEND MERCADO PAGO -->
+  <script src="painel-admin/config-integracao.js"></script>
+  <script src="painel-admin/mercadopago-panel-manager.js"></script>
+  <script src="painel-admin/config-mercadopago.js"></script>
+  
+  <!-- CSS Híbrido -->
+  <link rel="stylesheet" href="styles-hibrido.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Inicializando Clean Helmet Híbrido...</div>
+    <div class="loading-progress">
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+
+  <!-- Container Principal -->
+  <div id="mainContainer" class="hidden">
+    <!-- Tela de Autenticação -->
+    <div id="authContainer" class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="auth-title">🧠 Clean Helmet</h1>
+          <p class="auth-subtitle">Sistema de Gestão Inteligente v5.0 Híbrido</p>
+        </div>
+
+        <!-- Tabs de Login/Cadastro -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="alternarTab('login')">Login</button>
+          <button class="auth-tab" onclick="alternarTab('cadastro')">Cadastro</button>
+        </div>
+
+        <!-- Formulário de Login -->
+        <div id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" placeholder="seu@email.com" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="loginSenha">Senha:</label>
+            <input type="password" id="loginSenha" placeholder="Sua senha" required>
+          </div>
+          
+          <button type="button" onclick="fazerLogin()" class="auth-button">
+            🔐 Entrar
+          </button>
+
+          <!-- Usuários Demo -->
+          <div class="demo-users">
+            <h4>👥 Usuários Demo:</h4>
+            <div class="demo-buttons">
+              <button onclick="loginTeste('admin@test.com', 'admin')" class="demo-btn admin">👑 Admin</button>
+              <button onclick="loginTeste('tecnico@test.com', 'tecnico')" class="demo-btn tecnico">🔧 Técnico</button>
+              <button onclick="loginTeste('dev@test.com', 'desenvolvedor')" class="demo-btn dev">💻 Dev</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário de Cadastro -->
+        <div id="cadastroForm" class="auth-form hidden">
+          <div class="form-group">
+            <label for="cadastroNome">Nome:</label>
+            <input type="text" id="cadastroNome" placeholder="Seu nome completo" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="cadastroEmail">Email:</label>
+            <input type="email" id="cadastroEmail" placeholder="seu@email.com" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="cadastroSenha">Senha:</label>
+            <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Selecione seu cargo:</label>
+            <div class="cargo-buttons">
+              <button type="button" class="cargo-btn" onclick="selecionarCargo('admin')">
+                👑 Administrador
+              </button>
+              <button type="button" class="cargo-btn" onclick="selecionarCargo('tecnico')">
+                🔧 Técnico
+              </button>
+              <button type="button" class="cargo-btn" onclick="selecionarCargo('desenvolvedor')">
+                💻 Desenvolvedor
+              </button>
+            </div>
+          </div>
+          
+          <button type="button" onclick="fazerCadastro()" class="auth-button">
+            📝 Cadastrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Principal -->
+    <div id="dashboard" class="dashboard hidden">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1 class="system-title">🧠 Clean Helmet</h1>
+          <div class="system-version">v5.0 Híbrido</div>
+        </div>
+        
+        <div class="header-center">
+          <!-- 🆕 INDICADORES DE SISTEMA HÍBRIDO -->
+          <div class="system-indicators">
+            <div class="indicator">
+              <span class="indicator-label">Firebase:</span>
+              <span id="firebaseStatus" class="indicator-status">Verificando...</span>
+            </div>
+            <div class="indicator">
+              <span class="indicator-label">Backend:</span>
+              <span id="backendStatus" class="indicator-status">Verificando...</span>
+            </div>
+            <div class="indicator">
+              <span class="indicator-label">WebSocket:</span>
+              <span id="websocketStatus" class="indicator-status">Verificando...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name" id="nomeUsuario">Usuário</span>
+            <span class="user-role" id="cargoUsuario">cargo</span>
+          </div>
+          
+          <!-- 🆕 BOTÃO MODO HÍBRIDO -->
+          <button id="toggleModoBtn" onclick="alternarModoFirebase()" class="modo-toggle">
+            <span id="modoIcon">🔄</span>
+            <span id="modoTexto">Híbrido</span>
+          </button>
+          
+          <button onclick="logout()" class="logout-btn">
+            🚪 Sair
+          </button>
+        </div>
+      </header>
+
+      <!-- Navigation -->
+      <nav class="navigation">
+        <button class="nav-button active" onclick="abrirSecao('sensores')" data-roles="admin,tecnico,desenvolvedor">
+          📡 Sensores
+        </button>
+        <button class="nav-button" onclick="abrirSecao('controle')" data-roles="admin,tecnico">
+          🎛️ Controle
+        </button>
+        <button class="nav-button" onclick="abrirSecao('financeiro')" data-roles="admin">
+          💰 Financeiro
+        </button>
+        <button class="nav-button" onclick="abrirSecao('anuncios')" data-roles="admin">
+          📢 Anúncios
+        </button>
+        <button class="nav-button" onclick="abrirSecao('pagamentos')" data-roles="admin">
+          💳 Pagamentos
+        </button>
+        <button class="nav-button" onclick="abrirSecao('mp-config')" data-roles="admin">
+          🔧 Config MP
+        </button>
+        <!-- 🆕 NOVA SEÇÃO DE LOGS AVANÇADOS -->
+        <button class="nav-button" onclick="abrirSecao('logs-avancados')" data-roles="admin,desenvolvedor">
+          📋 Logs Avançados
+        </button>
+        <button class="nav-button" onclick="abrirSecao('logs')" data-roles="admin,desenvolvedor">
+          📝 Logs Firebase
+        </button>
+        <button class="nav-button" onclick="abrirSecao('configuracoes')" data-roles="admin,desenvolvedor">
+          ⚙️ Config
+        </button>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Seção Sensores -->
+        <section id="secaoSensores" class="section active">
+          <div class="section-header">
+            <h2>📡 Monitoramento de Sensores</h2>
+            <div class="section-actions">
+              <button onclick="atualizarSensores()" class="action-btn">🔄 Atualizar</button>
+            </div>
+          </div>
+          
+          <div class="sensors-grid">
+            <!-- Sensores serão carregados aqui -->
+          </div>
+        </section>
+
+        <!-- Seção Controle -->
+        <section id="secaoControle" class="section">
+          <div class="section-header">
+            <h2>🎛️ Controle de Equipamentos</h2>
+          </div>
+          
+          <div class="controls-container">
+            <!-- Controles serão carregados aqui -->
+          </div>
+        </section>
+
+        <!-- Seção Financeiro -->
+        <section id="secaoFinanceiro" class="section">
+          <div class="section-header">
+            <h2>💰 Relatório Financeiro</h2>
+          </div>
+          
+          <div id="financeiro-content" class="content-area">
+            <!-- Conteúdo financeiro será carregado aqui -->
+          </div>
+        </section>
+
+        <!-- Seção Anúncios -->
+        <section id="secaoAnuncios" class="section">
+          <div class="section-header">
+            <h2>📢 Gestão de Anúncios</h2>
+          </div>
+          
+          <div id="anuncios-content" class="content-area">
+            <!-- Header com estatísticas -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div class="stat-card" style="background: var(--bg-secondary); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--cor-principal);">
+                <h3 style="color: var(--cor-principal); margin: 0; font-size: 24px;" id="totalAnuncios">0</h3>
+                <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Total de Anúncios</p>
+              </div>
+              <div class="stat-card" style="background: var(--bg-secondary); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--cor-sucesso);">
+                <h3 style="color: var(--cor-sucesso); margin: 0; font-size: 24px;" id="anunciosAtivos">0</h3>
+                <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Anúncios Ativos</p>
+              </div>
+              <div class="stat-card" style="background: var(--bg-secondary); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--cor-aviso);">
+                <h3 style="color: var(--cor-aviso); margin: 0; font-size: 24px;" id="anunciosExpirados">0</h3>
+                <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Anúncios Expirados</p>
+              </div>
+              <div class="stat-card" style="background: var(--bg-secondary); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--cor-erro);">
+                <h3 style="color: var(--cor-erro); margin: 0; font-size: 24px;" id="anunciosInativos">0</h3>
+                <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Anúncios Inativos</p>
+              </div>
+            </div>
+
+            <!-- Botões de ação -->
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+              <button onclick="abrirModalNovoAnuncio()" style="background: var(--cor-principal); color: white; border: none; padding: 12px 24px; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>➕</span> Criar Novo Anúncio
+              </button>
+              
+              <button onclick="gerarRelatorioAnuncios()" style="background: var(--cor-aviso); color: white; border: none; padding: 12px 24px; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>📊</span> Relatório
+              </button>
+              
+              <button onclick="importarAnuncios()" style="background: var(--cor-sucesso); color: white; border: none; padding: 12px 24px; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>📥</span> Importar
+              </button>
+              
+              <button onclick="abrirVisualizadorAnuncios()" style="background: var(--cor-sucesso); color: white; border: none; padding: 12px 24px; border-radius: var(--border-radius); cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>👁️</span> Visualizar na Tela
+              </button>
+            </div>
+
+            <!-- Lista de anúncios -->
+            <div class="card">
+              <h3 style="color: var(--cor-principal); margin-bottom: 15px;">📢 Lista de Anúncios</h3>
+              <div id="listaAnuncios" style="display: grid; gap: 15px;">
+                <!-- Anúncios serão carregados aqui -->
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Seção Pagamentos -->
+        <section id="secaoPagamentos" class="section">
+          <div class="section-header">
+            <h2>💳 Sistema de Pagamentos Mercado Pago</h2>
+          </div>
+          
+          <div id="mercadopago-container" class="content-area">
+            <!-- Conteúdo do Mercado Pago será carregado aqui -->
+          </div>
+        </section>
+
+        <!-- Seção Config MP -->
+        <section id="secaoMpConfig" class="section">
+          <div class="section-header">
+            <h2>🔧 Configuração Mercado Pago</h2>
+          </div>
+          
+          <div id="mp-config-container" class="content-area">
+            <!-- Configuração MP será carregada aqui -->
+          </div>
+        </section>
+
+        <!-- 🆕 NOVA SEÇÃO DE LOGS AVANÇADOS -->
+        <section id="secaoLogsAvancados" class="section">
+          <div class="section-header">
+            <h2>📋 Logs Avançados (Backend v5.0)</h2>
+            <div class="section-actions">
+              <button onclick="refreshBackendLogs()" class="action-btn">🔄 Atualizar</button>
+              <button onclick="clearBackendLogs()" class="action-btn danger">🗑️ Limpar</button>
+              <button onclick="exportBackendLogs()" class="action-btn">📥 Exportar</button>
+              <button onclick="toggleAutoRefreshLogs()" id="autoRefreshBtn" class="action-btn">⚡ Auto-refresh</button>
+            </div>
+          </div>
+          
+          <!-- Filtros de Logs -->
+          <div class="logs-filters">
+            <div class="filter-group">
+              <label for="logLevelFilter">Nível:</label>
+              <select id="logLevelFilter" onchange="filterBackendLogs()">
+                <option value="">Todos</option>
+                <option value="info">Info</option>
+                <option value="warn">Warning</option>
+                <option value="error">Error</option>
+                <option value="debug">Debug</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="logTypeFilter">Tipo:</label>
+              <select id="logTypeFilter" onchange="filterBackendLogs()">
+                <option value="">Todos</option>
+                <option value="backend">Backend</option>
+                <option value="mercadopago">Mercado Pago</option>
+                <option value="sistema">Sistema</option>
+                <option value="webhook">Webhook</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="logSearchInput">Buscar:</label>
+              <input type="text" id="logSearchInput" placeholder="Buscar nos logs..." onkeyup="searchBackendLogs()" />
+            </div>
+          </div>
+
+          <!-- Estatísticas dos Logs -->
+          <div class="logs-stats">
+            <div class="stat-card">
+              <div class="stat-value" id="totalBackendLogs">0</div>
+              <div class="stat-label">Total de Logs</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="errorBackendLogs">0</div>
+              <div class="stat-label">Erros</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="warningBackendLogs">0</div>
+              <div class="stat-label">Warnings</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="infoBackendLogs">0</div>
+              <div class="stat-label">Info</div>
+            </div>
+          </div>
+
+          <!-- Container dos Logs -->
+          <div id="backend-logs-container" class="logs-container">
+            <!-- Logs serão carregados aqui via WebSocket -->
+          </div>
+        </section>
+
+        <!-- Seção Logs Firebase (Original) -->
+        <section id="secaoLogs" class="section">
+          <div class="section-header">
+            <h2>📝 Logs do Sistema (Firebase)</h2>
+            <div class="section-actions">
+              <button onclick="carregarLogs()" class="action-btn">🔄 Atualizar</button>
+              <button onclick="limparLogs()" class="action-btn danger">🗑️ Limpar</button>
+            </div>
+          </div>
+          
+          <div id="listaLogs" class="logs-list">
+            <!-- Logs serão carregados aqui -->
+          </div>
+        </section>
+
+        <!-- Seção Configurações -->
+        <section id="secaoConfiguracoes" class="section">
+          <div class="section-header">
+            <h2>⚙️ Configurações do Sistema</h2>
+          </div>
+          
+          <div class="config-content">
+            <div class="card">
+              <h3>🔧 Configurações Gerais</h3>
+              <p>Painel de configurações em desenvolvimento...</p>
+              
+              <div class="config-section">
+                <h4>🔄 Modo de Operação</h4>
+                <p>O sistema está operando em <strong>modo híbrido</strong>, combinando Firebase e Backend Node.js.</p>
+                
+                <div class="config-options">
+                  <div class="config-option">
+                    <label>
+                      <input type="checkbox" id="enableFirebase" checked disabled>
+                      Firebase (Sensores e Autenticação)
+                    </label>
+                  </div>
+                  
+                  <div class="config-option">
+                    <label>
+                      <input type="checkbox" id="enableBackend" checked disabled>
+                      Backend Node.js (Logs e APIs)
+                    </label>
+                  </div>
+                  
+                  <div class="config-option">
+                    <label>
+                      <input type="checkbox" id="enableWebSocket" checked disabled>
+                      WebSocket (Tempo Real)
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Container de Notificações -->
+  <div id="notificacoes-container" class="notificacoes-container"></div>
+
+  <!-- 🆕 WEBSOCKET STATUS INDICATOR -->
+  <div id="websocket-indicator" class="websocket-indicator">
+    <div class="ws-status" id="wsStatus">🔴 Desconectado</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="painel-sistema-hibrido.js"></script>
+</body>
+</html>
