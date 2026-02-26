@@ -21,10 +21,10 @@ const app = express();
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
 
-// Lista de origens permitidas
-const allowedOrigins = [
-  "https://clean-helmet-frontend.onrender.com", // URL do frontend no Render
-  "http://localhost:3000" // útil para testes locais
+// Lista de origens permitidas via variável de ambiente
+// Exemplo de valor: "https://clean-helmet.onrender.com,https://clean-helmet.netlify.app,http://localhost:3000,https://server-hibrido-js-1.onrender.com"
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  "http://localhost:3000"
 ];
 
 // Middleware de CORS
@@ -653,6 +653,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
