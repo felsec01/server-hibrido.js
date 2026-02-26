@@ -17,6 +17,30 @@ const cron = require('node-cron');
 const moment = require('moment');
 
 const app = express();
+const express = require("express");
+const cors = require("cors");
+const app = express();
+
+// Lista de origens permitidas
+const allowedOrigins = [
+  "https://clean-helmet-frontend.onrender.com", // URL do frontend no Render
+  "http://localhost:3000" // útil para testes locais
+];
+
+// Middleware de CORS
+app.use(cors({
+  origin: function (origin, callback) {
+    // Se não tiver origin (ex.: requisições internas) ou estiver na lista, libera
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS bloqueado para esta origem: " + origin));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -633,5 +657,6 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
