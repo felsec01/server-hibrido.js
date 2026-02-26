@@ -17,9 +17,9 @@ const cron = require('node-cron');
 const moment = require('moment');
 
 const app = express();
-const express = require("express");
-const cors = require("cors");
-const app = express();
+
+// ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
+app.set('trust proxy', 1);
 
 // Lista de origens permitidas
 const allowedOrigins = [
@@ -30,7 +30,6 @@ const allowedOrigins = [
 // Middleware de CORS
 app.use(cors({
   origin: function (origin, callback) {
-    // Se não tiver origin (ex.: requisições internas) ou estiver na lista, libera
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -44,10 +43,11 @@ app.use(cors({
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ["http://localhost:3000"],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -653,6 +653,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
