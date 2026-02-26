@@ -93,10 +93,6 @@ app.use(helmet({
   contentSecurityPolicy: false, // Permitir inline scripts para desenvolvimento
 }));
 
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ["http://localhost:3000"],
-  credentials: true
-}));
 
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
@@ -657,6 +653,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
