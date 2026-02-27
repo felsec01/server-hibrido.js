@@ -547,6 +547,28 @@ app.get('/api/mercadopago/statistics', (req, res) => {
   }
 });
 
+// ✅ NOVA ROTA WEBHOOK MERCADO PAGO
+app.post('/api/payments/webhook', (req, res) => {
+  try {
+    const paymentData = req.body;
+
+    // Criar log em memória e emitir via WebSocket
+    addLog('info', 'mercadopago', 'Webhook recebido', { paymentData });
+
+    io.emit('payment-status-update', {
+      status: paymentData.status || 'unknown',
+      id: paymentData.id || 'no-id',
+      type: paymentData.type || 'notification',
+      timestamp: new Date().toISOString()
+    });
+
+    res.sendStatus(200); // Confirma recebimento
+  } catch (error) {
+    addLog('error', 'mercadopago', 'Erro no webhook', { error: error.message });
+    res.sendStatus(500);
+  }
+});
+
 // ===== TRATAMENTO DE ERROS =====
 app.use((error, req, res, next) => {
   systemStats.errorCount++;
@@ -653,6 +675,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
