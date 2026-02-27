@@ -27,11 +27,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   "http://localhost:3000"
 ];
 
-// Log para confirmar quais origens estão carregadas 
-console.log("🚀 Allowed Origins carregados:", allowedOrigins); 
-
-addLog('info', 'sistema', 'Allowed Origins carregados', { allowedOrigins });
-
 // Middleware de CORS
 app.use(cors({
   origin: function (origin, callback) {
@@ -680,6 +675,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
