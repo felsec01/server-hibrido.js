@@ -569,6 +569,35 @@ app.post('/api/payments/webhook', (req, res) => {
   }
 });
 
+// ===== ROTAS MAQUINA =====
+
+// Parada de emergência
+app.post('/api/machine/emergency-stop', (req, res) => {
+  addLog('warn', 'maquina', 'Parada de emergência acionada', { ip: req.ip });
+
+  io.emit('emergency-stop', {
+    timestamp: new Date().toISOString(),
+    message: 'Parada de emergência acionada pelo painel admin'
+  });
+
+  res.json({ success: true });
+});
+
+// Ação em dispositivo
+app.post('/api/machine/device-action', (req, res) => {
+  const { device, action } = req.body;
+
+  addLog('info', 'maquina', 'Ação em dispositivo', { device, action });
+
+  io.emit('device-action', {
+    device,
+    action,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ success: true });
+});
+
 // ===== TRATAMENTO DE ERROS =====
 app.use((error, req, res, next) => {
   systemStats.errorCount++;
@@ -675,6 +704,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
