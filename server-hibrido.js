@@ -547,27 +547,86 @@ app.get('/api/mercadopago/statistics', (req, res) => {
   }
 });
 
-// ✅ NOVA ROTA WEBHOOK MERCADO PAGO
-app.post('/api/payments/webhook', (req, res) => {
-  try {
-    const paymentData = req.body;
+const mercadopago = require('mercadopago');
+mercadopago.configure({ access_token: process.env.MERCADOPAGO_ACCESS_TOKEN });
 
-    // Criar log em memória e emitir via WebSocket
-    addLog('info', 'mercadopago', 'Webhook recebido', { paymentData });
+app.post('/api/payments/webhook', async (req, res) => {
+  try {
+    const { data, type } = req.body;
+    const paymentId = data?.id;
+
+    // Validação extra
+    if (!paymentId) {
+      addLog('warn', 'mercadopago', 'Webhook sem paymentId', { body: req.body });
+      return res.sendStatus(200);
+    }
+
+    // Consulta status real no Mercado Pago
+    const mpPayment = await mercadopago.payment.findById(paymentId);
 
     io.emit('payment-status-update', {
-      status: paymentData.status || 'unknown',
-      id: paymentData.id || 'no-id',
-      type: paymentData.type || 'notification',
+      id: mpPayment.body.id,
+      status: mpPayment.body.status, // "approved", "rejected", "pending"
+      method: mpPayment.body.payment_method_id, // "pix", "card"
+      amount: mpPayment.body.transaction_amount,
       timestamp: new Date().toISOString()
     });
 
-    res.sendStatus(200); // Confirma recebimento
+    addLog('info', 'mercadopago', 'Pagamento validado', mpPayment.body);
+
+    res.sendStatus(200);
   } catch (error) {
     addLog('error', 'mercadopago', 'Erro no webhook', { error: error.message });
     res.sendStatus(500);
   }
 });
+
+// Criar preferência de pagamento
+app.post('/api/payments/create', async (req, res) => {
+  try {
+    const { method, amount } = req.body;
+
+    const preference = {
+      items: [
+        {
+          title: "Ciclo de Desinfecção Clean Helmet",
+          quantity: 1,
+          currency_id: "BRL",
+          unit_price: parseFloat(amount)
+        }
+      ],
+      payment_methods: {
+        excluded_payment_types: method === "pix" ? ["credit_card", "debit_card"] : ["ticket"],
+        installments: 1
+      },
+      back_urls: {
+        success: "https://clean-helmet.netlify.app/success",
+        failure: "https://clean-helmet.netlify.app/failure",
+        pending: "https://clean-helmet.netlify.app/pending"
+      },
+      auto_return: "approved",
+      notification_url: `${process.env.SERVER_URL}/api/payments/webhook`
+    };
+
+    const response = await mercadopago.preferences.create(preference);
+
+    addLog('info', 'mercadopago', 'Preferência criada', {
+      method,
+      amount,
+      preferenceId: response.body.id
+    });
+
+    res.json({
+      init_point: response.body.init_point,
+      sandbox_init_point: response.body.sandbox_init_point,
+      id: response.body.id
+    });
+  } catch (error) {
+    addLog('error', 'mercadopago', 'Erro ao criar preferência', { error: error.message });
+    res.status(500).json({ error: 'Erro ao criar preferência de pagamento' });
+  }
+});
+
 
 // ===== ROTAS MAQUINA =====
 
@@ -704,6 +763,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
