@@ -258,7 +258,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'painel-admin-hibrido.html'));
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
   const healthData = {
     status: 'ok',
@@ -271,7 +270,11 @@ app.get('/api/health', (req, res) => {
       total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
     },
     services: {
-      websocket: io.sockets.sockets.size > 0 ? 'connected' : 'available',
+      websocket: {
+        status: io.sockets.sockets.size > 0 ? 'connected' : 'available',
+        connectedClients: io.engine.clientsCount,
+        rooms: Object.keys(io.sockets.adapter.rooms)
+      },
       logs: logsMemoria.length,
       firebase: 'external',
       mercadopago: process.env.MERCADOPAGO_ACCESS_TOKEN ? 'configured' : 'not_configured'
@@ -280,6 +283,7 @@ app.get('/api/health', (req, res) => {
   
   res.json(healthData);
 });
+
 
 // ===== ROTAS DE LOGS =====
 
@@ -763,6 +767,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
