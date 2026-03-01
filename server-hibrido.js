@@ -691,6 +691,42 @@ app.use((req, res) => {
   });
 });
 
+// ===== ALIASES E ROTAS COMPLEMENTARES =====
+
+// Alias para webhook Mercado Pago (caso frontend chame /api/mercadopago/webhook)
+app.post("/api/mercadopago/webhook", (req, res, next) => {
+  // Encaminha para a rota oficial /api/payments/webhook
+  req.url = "/api/payments/webhook";
+  next();
+});
+
+// Alias para criar preferência (caso frontend chame /api/create-preference)
+app.post("/api/create-preference", (req, res, next) => {
+  // Encaminha para a rota oficial /api/payments/create
+  req.url = "/api/payments/create";
+  next();
+});
+
+// Health check específico do WebSocket
+app.get("/api/ws-health", (req, res) => {
+  res.json({
+    status: "ok",
+    connectedClients: io.engine.clientsCount,
+    rooms: Object.keys(io.sockets.adapter.rooms),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Servir arquivos estáticos do painel admin
+app.use("/painel-admin", express.static(path.join(__dirname, "painel-admin"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".js")) {
+      res.setHeader("Content-Type", "application/javascript");
+    }
+  }
+}));
+
+
 // ===== TAREFAS AGENDADAS =====
 
 // Limpeza automática de logs antigos (diária às 2:00)
@@ -767,6 +803,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
