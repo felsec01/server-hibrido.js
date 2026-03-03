@@ -4,7 +4,7 @@ import fetch from "node-fetch"; // ou axios
 const router = express.Router();
 
 // Substitua pelo seu Access Token real do Mercado Pago
-const MERCADO_PAGO_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "TEST-xxxxxxxxxxxxxxxxxxxxxx";
+const MERCADO_PAGO_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "TEST-336e3af6-b446-444e-9fc8-cfb46d8ef480";
 
 // Endpoint para criar preferência
 router.post("/create-preference", async (req, res) => {
@@ -40,3 +40,4 @@ router.post("/create-preference", async (req, res) => {
 });
 
 export default router;
+
