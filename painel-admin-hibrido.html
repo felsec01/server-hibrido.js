@@ -8,18 +8,24 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Firebase SDK (Mantido) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  
-  <!-- 🆕 BACKEND v5.0 INTEGRATION -->
-  <script src="/socket.io/socket.io.js"></script>
-  
-  <!-- 🆕 INTEGRAÇÃO BACKEND MERCADO PAGO -->
-  <script src="/config-mercadopago.js"></script>
-  <script src="/config-integracao.js"></script>
-  <script src="/mercadopago-panel-manager.js"></script>
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- SDK MercadoPago -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+
+<!-- Configurações do painel (na raiz) -->
+<script src="/config-mercadopago.js"></script>
+<script src="/config-integracao.js"></script>
+<script src="/mercadopago-panel-manager.js"></script>
+
+<!-- Script principal -->
+<script src="/painel-sistema-hibrido.js"></script>
 
   
   <!-- CSS Híbrido -->
@@ -450,5 +456,6 @@
 </body>
 
 </html>
+
 
 
