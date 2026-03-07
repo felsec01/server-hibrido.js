@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Testes Clean Helmet</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 15px; border: 1px solid #ccc; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Testes Clean Helmet</h1>
+  <button onclick="testHealth()">Testar Health</button>
+  <button onclick="testFirebaseWrite()">Testar Firebase Escrita</button>
+  <button onclick="testFirebaseRead()">Testar Firebase Leitura</button>
+  <button onclick="testMercadoPago()">Testar Mercado Pago</button>
+  <button onclick="testWebSocket()">Testar WebSocket</button>
+
+  <pre id="output">Clique em um botão para iniciar os testes...</pre>
+
+  <script>
+    const BASE_URL = "/api"; // usa o mesmo domínio do Render
+    const output = document.getElementById("output");
+
+    async function testHealth() {
+      const res = await fetch(`${BASE_URL}/health`);
+      output.textContent = "Health: " + JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function testFirebaseWrite() {
+      const res = await fetch(`${BASE_URL}/test-firebase`);
+      output.textContent = "Firebase Write: " + JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function testFirebaseRead() {
+      const res = await fetch(`${BASE_URL}/read-firebase`);
+      output.textContent = "Firebase Read: " + JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function testMercadoPago() {
+      const res = await fetch(`${BASE_URL}/payments/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: "pix", amount: 10.0 })
+      });
+      output.textContent = "Mercado Pago: " + JSON.stringify(await res.json(), null, 2);
+    }
+
+    function testWebSocket() {
+      const socket = io(); // conecta no mesmo domínio
+      socket.on("connect", () => {
+        output.textContent = "Conectado ao WebSocket";
+        socket.emit("status_update", { id: "test123", status: "approved" });
+      });
+      socket.on("status_update", (data) => {
+        output.textContent = "Recebido via WebSocket: " + JSON.stringify(data, null, 2);
+        socket.disconnect();
+      });
+    }
+  </script>
+</body>
+</html>
