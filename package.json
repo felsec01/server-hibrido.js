@@ -48,6 +48,8 @@
     "axios": "^1.4.0",
     "mercadopago": "^1.5.17",
     "nodemailer": "^6.9.4"
+    "firebase-admin": "^12.0.0"
+
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
@@ -59,4 +61,5 @@
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
   }
+
 }
