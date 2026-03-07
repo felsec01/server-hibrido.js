@@ -15,9 +15,6 @@ const DailyRotateFile = require('winston-daily-rotate-file');
 const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
-const admin = require("firebase-admin");
-
-const app = express();
 
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
@@ -28,7 +25,17 @@ admin.initializeApp({
   databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
 
+// Função auxiliar para salvar status de pagamento
+function salvarStatusPagamento(paymentId, status, method) {
+  const ref = admin.database().ref("payments/" + paymentId);
+  ref.set({
+    status,
+    method,
+    updatedAt: Date.now()
+  });
+}
 
+const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
@@ -832,6 +839,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
