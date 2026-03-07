@@ -34,7 +34,7 @@ admin.initializeApp({
 
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-// ===== ROTAS DE TESTE FIREBASE =====
+// ===== ROTA DE TESTE FIREBASE (escrita) =====
 app.get("/api/test-firebase", async (req, res) => {
   try {
     await admin.database().ref("test").set({
@@ -47,6 +47,7 @@ app.get("/api/test-firebase", async (req, res) => {
   }
 });
 
+// ===== ROTA DE LEITURA FIREBASE =====
 app.get("/api/read-firebase", async (req, res) => {
   try {
     const snapshot = await admin.database().ref("test").once("value");
