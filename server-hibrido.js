@@ -19,15 +19,12 @@ const moment = require('moment');
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
-
-
-// Opção 1: usar credenciais padrão do ambiente (Render, Google Cloud, etc.)
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
   databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
 
-// Função auxiliar para salvar status de pagamento
+// 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
   ref.set({
@@ -36,6 +33,7 @@ function salvarStatusPagamento(paymentId, status, method) {
     updatedAt: Date.now()
   });
 }
+
 const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
@@ -830,6 +828,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
