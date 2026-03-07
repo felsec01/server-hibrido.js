@@ -16,12 +16,11 @@ const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
 
-// ===== EXPRESS =====
+const express = require("express");
 const app = express();
-app.set("trust proxy", 1);
 
-// Servir arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, "public")));
+// Necessário para Render (proxy)
+app.set("trust proxy", 1);
 
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
@@ -56,6 +55,16 @@ app.get("/api/read-firebase", async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// 🔗 Função auxiliar para salvar status de pagamento
+function salvarStatusPagamento(paymentId, status, method) {
+  const ref = admin.database().ref("payments/" + paymentId);
+  ref.set({
+    status,
+    method,
+    updatedAt: Date.now()
+  });
+}
 
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
@@ -873,6 +882,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
