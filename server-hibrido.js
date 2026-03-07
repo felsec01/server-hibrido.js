@@ -16,8 +16,6 @@ const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
 
-const app = express();
-
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
@@ -33,8 +31,7 @@ function salvarStatusPagamento(paymentId, status, method) {
     updatedAt: Date.now()
   });
 }
-
-
+const app = express();
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
 
@@ -837,6 +834,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
