@@ -17,6 +17,8 @@ const cron = require('node-cron');
 const moment = require('moment');
 const admin = require("firebase-admin");
 
+const app = express();
+
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
@@ -27,7 +29,6 @@ admin.initializeApp({
 });
 
 
-const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
@@ -831,6 +832,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
