@@ -30,19 +30,6 @@ admin.initializeApp({
 // 🔗 Teste de inicialização
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-// ===== ROTA DE TESTE FIREBASE =====
-app.get("/api/test-firebase", async (req, res) => {
-  try {
-    await admin.database().ref("test").set({
-      message: "Firebase funcionando!",
-      timestamp: new Date().toISOString()
-    });
-    res.json({ success: true, message: "Dados gravados no Firebase" });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
@@ -848,6 +835,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
