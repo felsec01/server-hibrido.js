@@ -27,16 +27,6 @@ admin.initializeApp({
 });
 
 
-// Função auxiliar para salvar status de pagamento
-function salvarStatusPagamento(paymentId, status, method) {
-  const ref = admin.database().ref("payments/" + paymentId);
-  ref.set({
-    status,
-    method,
-    updatedAt: Date.now()
-  });
-}
-
 const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
@@ -841,6 +831,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
