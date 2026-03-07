@@ -18,6 +18,24 @@ const moment = require('moment');
 
 const app = express();
 
+// ===== FIREBASE REALTIME DATABASE =====
+const admin = require("firebase-admin");
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: "https://SEU-PROJETO.firebaseio.com"
+});
+
+function salvarStatusPagamento(paymentId, status, method) {
+  const ref = admin.database().ref("payments/" + paymentId);
+  ref.set({
+    status,
+    method,
+    updatedAt: Date.now()
+  });
+}
+
+
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
 
@@ -233,6 +251,17 @@ function addLog(level, type, message, metadata = {}) {
 function updateSystemStats() {
   systemStats.lastActivity = Date.now();
   systemStats.uptime = Date.now() - systemStats.startTime;
+
+  function salvarStatusPagamento(paymentId, status, method) {
+  const ref = admin.database().ref("payments/" + paymentId);
+  ref.set({
+    status,
+    method,
+    updatedAt: Date.now()
+  });
+}
+
+
   
   // Emitir estatísticas via WebSocket
   io.emit('stats-update', {
@@ -556,10 +585,9 @@ mercadopago.configure({ access_token: process.env.MERCADOPAGO_ACCESS_TOKEN });
 
 app.post('/api/payments/webhook', async (req, res) => {
   try {
-    const { data, type } = req.body;
+    const { data } = req.body;
     const paymentId = data?.id;
 
-    // Validação extra
     if (!paymentId) {
       addLog('warn', 'mercadopago', 'Webhook sem paymentId', { body: req.body });
       return res.sendStatus(200);
@@ -568,13 +596,20 @@ app.post('/api/payments/webhook', async (req, res) => {
     // Consulta status real no Mercado Pago
     const mpPayment = await mercadopago.payment.findById(paymentId);
 
+    const status = mpPayment.body.status; // "approved", "rejected", "pending"
+    const method = mpPayment.body.payment_method_id; // "pix", "card"
+
+    // 🔗 Emitir via WebSocket
     io.emit('payment-status-update', {
       id: mpPayment.body.id,
-      status: mpPayment.body.status, // "approved", "rejected", "pending"
-      method: mpPayment.body.payment_method_id, // "pix", "card"
+      status,
+      method,
       amount: mpPayment.body.transaction_amount,
       timestamp: new Date().toISOString()
     });
+
+    // 🔗 Salvar no Firebase Realtime Database
+    salvarStatusPagamento(mpPayment.body.id, status, method);
 
     addLog('info', 'mercadopago', 'Pagamento validado', mpPayment.body);
 
@@ -803,6 +838,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
