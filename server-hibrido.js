@@ -19,6 +19,8 @@ const moment = require('moment');
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
+const app = express();
+
 // Opção 1: usar credenciais padrão do ambiente (Render, Google Cloud, etc.)
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -35,7 +37,6 @@ function salvarStatusPagamento(paymentId, status, method) {
   });
 }
 
-const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
@@ -839,6 +840,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
