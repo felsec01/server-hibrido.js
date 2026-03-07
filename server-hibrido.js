@@ -18,9 +18,10 @@ const moment = require('moment');
 
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
 
@@ -828,6 +829,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
