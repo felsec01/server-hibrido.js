@@ -19,6 +19,7 @@ const moment = require('moment');
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
+// Lê o JSON de credenciais do Firebase a partir da variável de ambiente
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
@@ -830,6 +831,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
