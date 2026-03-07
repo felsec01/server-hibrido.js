@@ -19,7 +19,7 @@ const moment = require('moment');
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
-const app = express();
+
 
 // Opção 1: usar credenciais padrão do ambiente (Render, Google Cloud, etc.)
 admin.initializeApp({
@@ -36,7 +36,7 @@ function salvarStatusPagamento(paymentId, status, method) {
     updatedAt: Date.now()
   });
 }
-
+const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
@@ -248,16 +248,6 @@ function addLog(level, type, message, metadata = {}) {
   io.emit('new-log', logEntry);
   
   return logEntry;
-}
-
-// 🔗 Função auxiliar para salvar status de pagamento (fora de updateSystemStats)
-function salvarStatusPagamento(paymentId, status, method) {
-  const ref = admin.database().ref("payments/" + paymentId);
-  ref.set({
-    status,
-    method,
-    updatedAt: Date.now()
-  });
 }
 
 function updateSystemStats() {
@@ -840,6 +830,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
