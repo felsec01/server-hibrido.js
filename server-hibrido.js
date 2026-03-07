@@ -45,6 +45,16 @@ app.get("/api/test-firebase", async (req, res) => {
   }
 });
 
+// ===== ROTA DE LEITURA FIREBASE =====
+app.get("/api/read-firebase", async (req, res) => {
+  try {
+    const snapshot = await admin.database().ref("test").once("value");
+    res.json({ success: true, data: snapshot.val() });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
@@ -847,6 +857,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
