@@ -19,6 +19,8 @@ const moment = require('moment');
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
 
+const app = express();
+
 // Lê o JSON de credenciais do Firebase a partir da variável de ambiente
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
@@ -30,7 +32,6 @@ admin.initializeApp({
 // 🔗 Teste de inicialização
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
@@ -40,8 +41,6 @@ function salvarStatusPagamento(paymentId, status, method) {
     updatedAt: Date.now()
   });
 }
-
-const app = express();
 
 // ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
 app.set('trust proxy', 1);
@@ -835,6 +834,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
