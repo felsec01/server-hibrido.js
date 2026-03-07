@@ -22,10 +22,9 @@ const app = express();
 const admin = require("firebase-admin");
 
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: "https://SEU-PROJETO.firebaseio.com"
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
-
 function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
   ref.set({
@@ -838,6 +837,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
