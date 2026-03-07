@@ -27,6 +27,9 @@ admin.initializeApp({
   databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
 
+// 🔗 Teste de inicialização
+console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
+
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
@@ -831,6 +834,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
