@@ -242,11 +242,8 @@ function addLog(level, type, message, metadata = {}) {
   return logEntry;
 }
 
-function updateSystemStats() {
-  systemStats.lastActivity = Date.now();
-  systemStats.uptime = Date.now() - systemStats.startTime;
-
-  function salvarStatusPagamento(paymentId, status, method) {
+// 🔗 Função auxiliar para salvar status de pagamento (fora de updateSystemStats)
+function salvarStatusPagamento(paymentId, status, method) {
   const ref = admin.database().ref("payments/" + paymentId);
   ref.set({
     status,
@@ -255,8 +252,11 @@ function updateSystemStats() {
   });
 }
 
+function updateSystemStats() {
+  systemStats.lastActivity = Date.now();
+  systemStats.uptime = Date.now() - systemStats.startTime;
 
-  
+   
   // Emitir estatísticas via WebSocket
   io.emit('stats-update', {
     uptime: systemStats.uptime,
@@ -832,6 +832,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
