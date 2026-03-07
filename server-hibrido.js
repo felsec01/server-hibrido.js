@@ -16,11 +16,12 @@ const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
 
-const express = require("express");
+// ===== EXPRESS =====
 const app = express();
-
-// Necessário para Render (proxy)
 app.set("trust proxy", 1);
+
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, "public")));
 
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
@@ -33,7 +34,7 @@ admin.initializeApp({
 
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-// ===== ROTA DE TESTE FIREBASE (escrita) =====
+// ===== ROTAS DE TESTE FIREBASE =====
 app.get("/api/test-firebase", async (req, res) => {
   try {
     await admin.database().ref("test").set({
@@ -46,7 +47,6 @@ app.get("/api/test-firebase", async (req, res) => {
   }
 });
 
-// ===== ROTA DE LEITURA FIREBASE =====
 app.get("/api/read-firebase", async (req, res) => {
   try {
     const snapshot = await admin.database().ref("test").once("value");
@@ -55,16 +55,6 @@ app.get("/api/read-firebase", async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
-// 🔗 Função auxiliar para salvar status de pagamento
-function salvarStatusPagamento(paymentId, status, method) {
-  const ref = admin.database().ref("payments/" + paymentId);
-  ref.set({
-    status,
-    method,
-    updatedAt: Date.now()
-  });
-}
 
 // 🔗 Função auxiliar para salvar status de pagamento
 function salvarStatusPagamento(paymentId, status, method) {
@@ -882,6 +872,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
