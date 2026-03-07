@@ -16,12 +16,15 @@ const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
 
+// ===== EXPRESS =====
+const app = express();
+app.set("trust proxy", 1);
+
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, "public")));
+
 // ===== FIREBASE REALTIME DATABASE =====
 const admin = require("firebase-admin");
-
-const app = express();
-
-// Lê o JSON de credenciais do Firebase a partir da variável de ambiente
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
@@ -29,10 +32,9 @@ admin.initializeApp({
   databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
 });
 
-// 🔗 Teste de inicialização
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-// ===== ROTA DE TESTE FIREBASE =====
+// ===== ROTAS DE TESTE FIREBASE =====
 app.get("/api/test-firebase", async (req, res) => {
   try {
     await admin.database().ref("test").set({
@@ -45,7 +47,6 @@ app.get("/api/test-firebase", async (req, res) => {
   }
 });
 
-// ===== ROTA DE LEITURA FIREBASE =====
 app.get("/api/read-firebase", async (req, res) => {
   try {
     const snapshot = await admin.database().ref("test").once("value");
@@ -65,8 +66,22 @@ function salvarStatusPagamento(paymentId, status, method) {
   });
 }
 
-// ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
-app.set('trust proxy', 1);
+// ===== INICIALIZAÇÃO DO SERVIDOR COM SOCKET.IO =====
+const server = http.createServer(app);
+const io = socketIo(server);
+
+io.on("connection", (socket) => {
+  console.log("Cliente conectado via WebSocket");
+  socket.on("status_update", (data) => {
+    console.log("Evento recebido:", data);
+    io.emit("status_update", data);
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
 
 // Lista de origens permitidas via variável de ambiente
 // Exemplo de valor: "https://clean-helmet.onrender.com,https://clean-helmet.netlify.app,http://localhost:3000,https://server-hibrido-js-1.onrender.com"
@@ -857,6 +872,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
