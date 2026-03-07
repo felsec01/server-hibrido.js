@@ -1,4 +1,4 @@
-// ===== CLEAN HELMET BACKEND HÍBRIDO v5.0 =====
+esta ok - // ===== CLEAN HELMET BACKEND HÍBRIDO v5.0 =====
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -34,7 +34,7 @@ admin.initializeApp({
 
 console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
 
-// ===== ROTAS DE TESTE FIREBASE =====
+// ===== ROTA DE TESTE FIREBASE =====
 app.get("/api/test-firebase", async (req, res) => {
   try {
     await admin.database().ref("test").set({
@@ -47,6 +47,7 @@ app.get("/api/test-firebase", async (req, res) => {
   }
 });
 
+// ===== ROTA DE LEITURA FIREBASE =====
 app.get("/api/read-firebase", async (req, res) => {
   try {
     const snapshot = await admin.database().ref("test").once("value");
@@ -54,6 +55,12 @@ app.get("/api/read-firebase", async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// ===== INICIALIZAÇÃO DO SERVIDOR =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
 
 // 🔗 Função auxiliar para salvar status de pagamento
@@ -66,22 +73,8 @@ function salvarStatusPagamento(paymentId, status, method) {
   });
 }
 
-// ===== INICIALIZAÇÃO DO SERVIDOR COM SOCKET.IO =====
-const server = http.createServer(app);
-const io = socketIo(server);
-
-io.on("connection", (socket) => {
-  console.log("Cliente conectado via WebSocket");
-  socket.on("status_update", (data) => {
-    console.log("Evento recebido:", data);
-    io.emit("status_update", data);
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+// ✅ Necessário para Render (proxy) → evita erro do express-rate-limit
+app.set('trust proxy', 1);
 
 // Lista de origens permitidas via variável de ambiente
 // Exemplo de valor: "https://clean-helmet.onrender.com,https://clean-helmet.netlify.app,http://localhost:3000,https://server-hibrido-js-1.onrender.com"
@@ -872,6 +865,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
