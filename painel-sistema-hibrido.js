@@ -38,10 +38,10 @@ let logsBackend = [];
 let autoRefreshLogsActive = false;
 let autoRefreshInterval = null;
 
-// Inicializar Firebase
+// Inicializar Firebase usando config centralizada
 let firebaseDisponivel = false;
 try {
-  firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(window.CLEAN_HELMET_CONFIG.firebase);
   firebaseDisponivel = true;
   console.log('✅ Firebase inicializado com sucesso');
   
@@ -2532,3 +2532,4 @@ window.cleanHelmetHybrid = {
 };
 
 console.log('🚀 Clean Helmet Sistema Híbrido v5.0 COMPLETO carregado com sucesso');
+
