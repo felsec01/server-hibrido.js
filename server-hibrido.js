@@ -145,41 +145,56 @@ const logger = winston.createLogger({
 });
 
 // ===== MIDDLEWARES =====
-app.use(helmet({
-  contentSecurityPolicy: {
-    useDefaults: true,
-    directives: {
-      "default-src": ["'self'"],
-      "script-src": [
-        "'self'",
-        "https://www.gstatic.com",
-        "https://www.googleapis.com",
-        "https://sdk.mercadopago.com"
-      ],
-      "script-src-attr": ["'unsafe-inline'"],
-      "style-src": [
-        "'self'",
-        "'unsafe-inline'",
-        "https://fonts.googleapis.com"
-      ],
-      "font-src": [
-        "'self'",
-        "https://fonts.gstatic.com"
-      ],
-      "connect-src": [
-        "'self'",
-        "https://www.googleapis.com",
-        "https://api.mercadopago.com",
-        process.env.SERVER_URL
-      ],
-      "img-src": ["'self'", "data:", "https:"],
-      "frame-src": [
-        "'self'",
-        "https://sdk.mercadopago.com"
-      ]
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+
+        // Scripts externos necessários
+        "script-src": [
+          "'self'",
+          "https://www.gstatic.com",
+          "https://www.googleapis.com",
+          "https://sdk.mercadopago.com"
+        ],
+        "script-src-attr": ["'unsafe-inline'"],
+
+        // Estilos e fontes
+        "style-src": [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com"
+        ],
+        "font-src": [
+          "'self'",
+          "https://fonts.gstatic.com"
+        ],
+
+        // Conexões externas (API, WebSocket, Firebase, MercadoPago, Backend)
+        "connect-src": [
+          "'self'",
+          "https://www.googleapis.com",
+          "https://www.gstatic.com",
+          "https://api.mercadopago.com",
+          "https://sdk.mercadopago.com",
+          process.env.SERVER_URL
+        ],
+
+        // Imagens
+        "img-src": ["'self'", "data:", "https:"],
+
+        // Frames (MercadoPago checkout)
+        "frame-src": [
+          "'self'",
+          "https://sdk.mercadopago.com"
+        ]
+      }
     }
-  }
-}));
+  })
+);
+
 
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
@@ -897,6 +912,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
