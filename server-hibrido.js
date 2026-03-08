@@ -152,30 +152,30 @@ app.use(helmet({
       "default-src": ["'self'"],
       "script-src": [
         "'self'",
-        "https://www.gstatic.com",          // Firebase
-        "https://www.googleapis.com",       // Firebase API
-        "https://sdk.mercadopago.com"       // Mercado Pago
+        "https://www.gstatic.com",
+        "https://www.googleapis.com",
+        "https://sdk.mercadopago.com"
       ],
-      "script-src-attr": ["'unsafe-inline'"], // permite atributos inline
+      "script-src-attr": ["'unsafe-inline'"],
       "style-src": [
         "'self'",
         "'unsafe-inline'",
-        "https://fonts.googleapis.com"      // Google Fonts
+        "https://fonts.googleapis.com"
       ],
       "font-src": [
         "'self'",
-        "https://fonts.gstatic.com"         // Fontes do Google
+        "https://fonts.gstatic.com"
       ],
       "connect-src": [
         "'self'",
-        "https://www.googleapis.com",       // Firebase
-        "https://api.mercadopago.com",      // Mercado Pago API
-        process.env.SERVER_URL              // libera chamadas ao seu backend
+        "https://www.googleapis.com",
+        "https://api.mercadopago.com",
+        process.env.SERVER_URL
       ],
       "img-src": ["'self'", "data:", "https:"],
       "frame-src": [
         "'self'",
-        "https://sdk.mercadopago.com"       // iframes do Mercado Pago
+        "https://sdk.mercadopago.com"
       ]
     }
   }
@@ -897,6 +897,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
