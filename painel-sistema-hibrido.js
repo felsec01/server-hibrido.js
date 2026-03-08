@@ -5,18 +5,15 @@
 // ===== CONFIGURAÇÃO FIREBASE (USANDO CONFIG GLOBAL) =====
 const FIREBASE_CONFIG = window.CLEAN_HELMET_CONFIG.firebase;
 
-let firebaseDisponivel = false;
-try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    console.log("✅ Firebase inicializado com sucesso");
-  } else {
-    console.log("ℹ️ Firebase já estava inicializado");
-  }
-  firebaseDisponivel = true;
-} catch (error) {
-  console.warn("⚠️ Erro ao inicializar Firebase:", error);
+if (!firebase.apps.length) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  console.log("✅ Firebase inicializado com sucesso");
+} else {
+  console.log("ℹ️ Firebase já estava inicializado");
 }
+
+// Marca disponibilidade sem duplicar
+window.firebaseDisponivel = true;
 
 // ===== CONFIGURAÇÃO BACKEND v5.0 =====
 const BACKEND_CONFIG = {
@@ -2537,5 +2534,6 @@ window.cleanHelmetHybrid = {
 };
 
 console.log('🚀 Clean Helmet Sistema Híbrido v5.0 COMPLETO carregado com sucesso');
+
 
 
