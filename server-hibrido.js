@@ -147,15 +147,37 @@ const logger = winston.createLogger({
 
 // ===== MIDDLEWARES =====
 app.use(helmet({
-  contentSecurityPolicy: false, // Permitir inline scripts para desenvolvimento
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "script-src": [
+        "'self'",
+        "https://www.gstatic.com",          // Firebase
+        "https://www.googleapis.com",       // Firebase API
+        "https://sdk.mercadopago.com"       // Mercado Pago
+      ],
+      "script-src-attr": ["'unsafe-inline'"], // permite atributos inline (onclick, etc.)
+      "style-src": ["'self'", "'unsafe-inline'"], // permite CSS inline
+      "connect-src": [
+        "'self'",
+        "https://www.googleapis.com",       // Firebase
+        "https://api.mercadopago.com"       // Mercado Pago API
+      ],
+      "img-src": ["'self'", "data:", "https:"],
+      "frame-src": [
+        "'self'",
+        "https://sdk.mercadopago.com"       // iframes do Mercado Pago
+      ]
+    }
+  }
 }));
-
 
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Morgan logging
+// Morgan logging integrado ao Winston
 app.use(morgan('combined', {
   stream: {
     write: (message) => logger.info(message.trim())
@@ -867,6 +889,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
