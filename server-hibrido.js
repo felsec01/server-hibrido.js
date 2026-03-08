@@ -84,24 +84,11 @@ server.listen(PORT, () => {
 });
 
 // Lista de origens permitidas via variável de ambiente
-// Exemplo de valor: "https://clean-helmet.onrender.com,https://clean-helmet.netlify.app,http://localhost:3000,https://server-hibrido-js-1.onrender.com"
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   "http://localhost:3000"
 ];
 
-// Middleware de CORS
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS bloqueado para esta origem: " + origin));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-
+// ===== INICIALIZAÇÃO DO SERVIDOR COM SOCKET.IO =====
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -110,10 +97,19 @@ const io = socketIo(server, {
   }
 });
 
-
 const PORT = process.env.PORT || 3000;
 
-console.log('🚀 Iniciando Clean Helmet Backend Híbrido v5.0...');
+io.on("connection", (socket) => {
+  console.log("Cliente conectado via WebSocket");
+  socket.on("status_update", (data) => {
+    console.log("Evento recebido:", data);
+    io.emit("status_update", data);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
 
 // ===== CONFIGURAÇÃO DE LOGS =====
 const logDir = './logs';
@@ -872,6 +868,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
