@@ -2,18 +2,25 @@
 // Integração Firebase + Backend Node.js + WebSocket
 // TODAS AS FUNCIONALIDADES IMPLEMENTADAS
 
-// ===== CONFIGURAÇÃO FIREBASE (USANDO CONFIG GLOBAL) =====
-const FIREBASE_CONFIG = window.CLEAN_HELMET_CONFIG.firebase;
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  console.log("✅ Firebase inicializado com sucesso");
-} else {
-  console.log("ℹ️ Firebase já estava inicializado");
+// Inicializar Firebase usando config centralizada
+let firebaseDisponivel = false;
+try {
+  firebase.initializeApp(window.CLEAN_HELMET_CONFIG.firebase);
+  firebaseDisponivel = true;
+  console.log('✅ Firebase inicializado com sucesso');
+  
+  setTimeout(() => {
+    updateSystemIndicator('firebase', 'online', 'Conectado');
+  }, 1000);
+} catch (error) {
+  console.warn('⚠️ Firebase não disponível:', error);
+  firebaseDisponivel = false;
+  
+  setTimeout(() => {
+    updateSystemIndicator('firebase', 'offline', 'Desconectado');
+  }, 1000);
 }
 
-// Marca disponibilidade sem duplicar
-window.firebaseDisponivel = true;
 
 // ===== CONFIGURAÇÃO BACKEND v5.0 =====
 const BACKEND_CONFIG = {
@@ -40,24 +47,6 @@ let logsBackend = [];
 let autoRefreshLogsActive = false;
 let autoRefreshInterval = null;
 
-// Inicializar Firebase usando config centralizada
-let firebaseDisponivel = false;
-try {
-  firebase.initializeApp(window.CLEAN_HELMET_CONFIG.firebase);
-  firebaseDisponivel = true;
-  console.log('✅ Firebase inicializado com sucesso');
-  
-  setTimeout(() => {
-    updateSystemIndicator('firebase', 'online', 'Conectado');
-  }, 1000);
-} catch (error) {
-  console.warn('⚠️ Firebase não disponível:', error);
-  firebaseDisponivel = false;
-  
-  setTimeout(() => {
-    updateSystemIndicator('firebase', 'offline', 'Desconectado');
-  }, 1000);
-}
 
 // ===== INICIALIZAÇÃO PRINCIPAL =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -2534,6 +2523,7 @@ window.cleanHelmetHybrid = {
 };
 
 console.log('🚀 Clean Helmet Sistema Híbrido v5.0 COMPLETO carregado com sucesso');
+
 
 
 
