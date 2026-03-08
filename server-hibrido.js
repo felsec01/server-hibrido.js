@@ -110,10 +110,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
-
 // ===== CONFIGURAÇÃO DE LOGS =====
 const logDir = './logs';
 fs.ensureDirSync(logDir);
@@ -871,6 +867,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
