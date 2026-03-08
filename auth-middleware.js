@@ -1,6 +1,8 @@
 // ===== CLEAN HELMET - MIDDLEWARE DE AUTENTICAÇÃO =====
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
+const admin = require("./firebase-admin");
+
 
 // ===== CONFIGURAÇÕES =====
 const JWT_SECRET = process.env.JWT_SECRET || 'clean-helmet-hybrid-jwt-secret-2024-super-secure';
@@ -79,30 +81,20 @@ function verifyToken(token) {
 }
 
 // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-  
+
   if (!token) {
     return res.status(401).json({ 
       error: 'Token de acesso requerido',
       message: 'Faça login para acessar este recurso'
     });
   }
-  
+
   try {
-    const decoded = verifyToken(token);
-    req.user = decoded;
-    
-    // Verificar se usuário ainda está ativo
-    const user = DEMO_USERS[decoded.email];
-    if (!user || !user.ativo) {
-      return res.status(403).json({ 
-        error: 'Usuário inativo',
-        message: 'Sua conta foi desativada'
-      });
-    }
-    
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded; // dados do usuário autenticado pelo Firebase
     next();
   } catch (error) {
     return res.status(403).json({ 
@@ -291,4 +283,5 @@ module.exports = {
   // Constantes
   DEMO_USERS,
   JWT_SECRET
+
 };
