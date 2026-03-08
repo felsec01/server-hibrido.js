@@ -2,16 +2,21 @@
 // Integração Firebase + Backend Node.js + WebSocket
 // TODAS AS FUNCIONALIDADES IMPLEMENTADAS
 
-// ===== CONFIGURAÇÃO FIREBASE (MANTIDA) =====
-const firebaseConfig = {
-  apiKey: "AIzaSyCO3ilDnLT2RjnFpzrIRBG1jxMrDppmEIA",
-  authDomain: "cleanhelmet-e55b7.firebaseapp.com",
-  databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com",
-  projectId: "cleanhelmet-e55b7",
-  storageBucket: "cleanhelmet-e55b7.firebasestorage.app",
-  messagingSenderId: "862264948080",
-  appId: "1:862264948080:web:c45791659355e509634bb5"
-};
+// ===== CONFIGURAÇÃO FIREBASE (USANDO CONFIG GLOBAL) =====
+const FIREBASE_CONFIG = window.CLEAN_HELMET_CONFIG.firebase;
+
+let firebaseDisponivel = false;
+try {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    console.log("✅ Firebase inicializado com sucesso");
+  } else {
+    console.log("ℹ️ Firebase já estava inicializado");
+  }
+  firebaseDisponivel = true;
+} catch (error) {
+  console.warn("⚠️ Erro ao inicializar Firebase:", error);
+}
 
 // ===== CONFIGURAÇÃO BACKEND v5.0 =====
 const BACKEND_CONFIG = {
@@ -2532,4 +2537,5 @@ window.cleanHelmetHybrid = {
 };
 
 console.log('🚀 Clean Helmet Sistema Híbrido v5.0 COMPLETO carregado com sucesso');
+
 
