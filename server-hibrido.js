@@ -22,7 +22,6 @@ app.set("trust proxy", 1);
 
 // ===== MIDDLEWARES DE SEGURANÇA E PERFORMANCE =====
 app.use(cors()); // libera CORS básico (se quiser usar a versão com allowedOrigins, mantenha só aquela)
-app.use(helmet()); // segurança de headers
 app.use(compression()); // compressão gzip
 app.use(express.json({ limit: '10mb' })); // parse JSON com limite
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // parse URL-encoded
@@ -170,7 +169,8 @@ app.use(helmet({
       "connect-src": [
         "'self'",
         "https://www.googleapis.com",       // Firebase
-        "https://api.mercadopago.com"       // Mercado Pago API
+        "https://api.mercadopago.com",      // Mercado Pago API
+        process.env.SERVER_URL              // libera chamadas ao seu backend
       ],
       "img-src": ["'self'", "data:", "https:"],
       "frame-src": [
@@ -897,6 +897,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
