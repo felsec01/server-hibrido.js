@@ -15,6 +15,8 @@ const DailyRotateFile = require('winston-daily-rotate-file');
 const fs = require('fs-extra');
 const cron = require('node-cron');
 const moment = require('moment');
+const { authenticateToken } = require("./auth-middleware");
+
 
 // ===== EXPRESS =====
 const app = express();
@@ -385,6 +387,21 @@ app.get('/api/health', (req, res) => {
   };
   
   res.json(healthData);
+});
+
+// ===== ROTAS DE AUTENTICAÇÃO =====
+app.get("/api/validate", authenticateToken, (req, res) => {
+  res.json({
+    valid: true,
+    user: req.user
+  });
+});
+
+app.get("/api/protegida", authenticateToken, (req, res) => {
+  res.json({
+    message: "Acesso autorizado!",
+    user: req.user
+  });
 });
 
 
@@ -912,6 +929,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
