@@ -157,8 +157,16 @@ app.use(helmet({
         "https://www.googleapis.com",       // Firebase API
         "https://sdk.mercadopago.com"       // Mercado Pago
       ],
-      "script-src-attr": ["'unsafe-inline'"], // permite atributos inline (onclick, etc.)
-      "style-src": ["'self'", "'unsafe-inline'"], // permite CSS inline
+      "script-src-attr": ["'unsafe-inline'"], // permite atributos inline
+      "style-src": [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com"      // Google Fonts
+      ],
+      "font-src": [
+        "'self'",
+        "https://fonts.gstatic.com"         // Fontes do Google
+      ],
       "connect-src": [
         "'self'",
         "https://www.googleapis.com",       // Firebase
@@ -889,6 +897,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
