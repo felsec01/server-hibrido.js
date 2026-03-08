@@ -20,6 +20,26 @@ const moment = require('moment');
 const app = express();
 app.set("trust proxy", 1);
 
+// ===== MIDDLEWARES DE SEGURANÇA E PERFORMANCE =====
+app.use(cors()); // libera CORS básico (se quiser usar a versão com allowedOrigins, mantenha só aquela)
+app.use(helmet()); // segurança de headers
+app.use(compression()); // compressão gzip
+app.use(express.json({ limit: '10mb' })); // parse JSON com limite
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // parse URL-encoded
+
+// Logging com Morgan
+app.use(morgan("combined"));
+
+// Rate limiting (proteção contra flood)
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo de requisições por IP
+  message: {
+    error: "Muitas requisições, tente novamente mais tarde."
+  }
+}));
+
+
 // Servir arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -65,23 +85,6 @@ function salvarStatusPagamento(paymentId, status, method) {
     updatedAt: Date.now()
   });
 }
-
-// ===== INICIALIZAÇÃO DO SERVIDOR COM SOCKET.IO =====
-const server = http.createServer(app);
-const io = socketIo(server);
-
-io.on("connection", (socket) => {
-  console.log("Cliente conectado via WebSocket");
-  socket.on("status_update", (data) => {
-    console.log("Evento recebido:", data);
-    io.emit("status_update", data);
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
 
 // Lista de origens permitidas via variável de ambiente
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -868,6 +871,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
