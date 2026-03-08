@@ -249,7 +249,7 @@ function selecionarCargo(cargo) {
   cargoSelecionado = cargo;
 }
 
-function fazerLogin() {
+async function fazerLogin() {
   const email = document.getElementById('loginEmail').value;
   const senha = document.getElementById('loginSenha').value;
 
@@ -263,125 +263,60 @@ function fazerLogin() {
     return;
   }
 
-  // Usuários demo
-  const usuariosDemo = {
-    'admin@test.com': { nome: 'Administrador', cargo: 'admin', senha: 'admin123' },
-    'tecnico@test.com': { nome: 'Técnico', cargo: 'tecnico', senha: 'tecnico123' },
-    'dev@test.com': { nome: 'Desenvolvedor', cargo: 'desenvolvedor', senha: 'dev123' }
-  };
+  try {
+    // Login via Firebase
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
+    const user = userCredential.user;
 
-  if (usuariosDemo[email] && usuariosDemo[email].senha === senha) {
+    // Pega o ID Token do Firebase
+    const idToken = await user.getIdToken();
+
+    // Salva dados básicos localmente
     usuarioAtual = {
-      email: email,
-      nome: usuariosDemo[email].nome,
-      cargo: usuariosDemo[email].cargo
+      email: user.email,
+      nome: user.displayName || email.split('@')[0],
+      cargo: 'tecnico' // ou cargo vindo do DB
     };
-    
     localStorage.setItem('usuarioCleanHelmet', JSON.stringify(usuarioAtual));
+
+    // Envia token ao backend para validar
+    const response = await fetch(`${window.CLEAN_HELMET_CONFIG.backend.baseUrl}/api/validate`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${idToken}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Token não aceito pelo backend");
+    }
+
+    const backendData = await response.json();
+    console.log("✅ Backend validou token:", backendData);
+
     mostrarDashboard();
-    
     mostrarNotificacao({
       tipo: 'sucesso',
-      titulo: '✅ Login Demo',
-      mensagem: `Bem-vindo, ${usuarioAtual.nome}! (Sistema Híbrido)`,
+      titulo: '✅ Login Realizado',
+      mensagem: `Bem-vindo, ${usuarioAtual.nome}!`,
       duracao: 8000
     });
 
-    // 🆕 LOG BACKEND
-    logToBackend('login', `Login demo realizado: ${usuarioAtual.nome}`);
-    return;
-  }
+    logToBackend('login', `Login Firebase realizado: ${usuarioAtual.nome} (${usuarioAtual.cargo})`);
 
-  // Login Firebase (se disponível)
-  if (firebaseDisponivel && firebase.auth) {
-    firebase.auth().signInWithEmailAndPassword(email, senha)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        const emailKey = email.replace(/[.#$[\]]/g, '_');
-        
-        return firebase.database().ref('usuarios/' + emailKey).once('value')
-          .then((snapshot) => {
-            if (!snapshot.exists()) {
-              const dadosBasicos = {
-                uid: user.uid,
-                nome: user.displayName || email.split('@')[0],
-                email: email,
-                cargo: 'tecnico',
-                dataCadastro: new Date().toISOString(),
-                ativo: true,
-                ultimoLogin: new Date().toISOString()
-              };
-              
-              return firebase.database().ref('usuarios/' + emailKey).set(dadosBasicos)
-                .then(() => dadosBasicos);
-            } else {
-              const userData = snapshot.val();
-              if (!userData.ativo) {
-                throw new Error('USUARIO_INATIVO');
-              }
-              
-              firebase.database().ref('usuarios/' + emailKey + '/ultimoLogin').set(new Date().toISOString());
-              return userData;
-            }
-          });
-      })
-      .then((userData) => {
-        usuarioAtual = {
-          email: userData.email,
-          nome: userData.nome,
-          cargo: userData.cargo
-        };
-        
-        localStorage.setItem('usuarioCleanHelmet', JSON.stringify(usuarioAtual));
-        mostrarDashboard();
-        
-        mostrarNotificacao({
-          tipo: 'sucesso',
-          titulo: '✅ Login Realizado',
-          mensagem: `Bem-vindo de volta, ${usuarioAtual.nome}! (Firebase + Backend)`,
-          duracao: 8000
-        });
+  } catch (error) {
+    console.error("Erro ao fazer login:", error);
 
-        logToBackend('login', `Login Firebase realizado: ${usuarioAtual.nome} (${usuarioAtual.cargo})`);
-      })
-      .catch((error) => {
-        console.error('Erro ao fazer login:', error);
-        
-        let mensagemErro = 'Falha no login. Tente novamente.';
-        if (error.message === 'USUARIO_INATIVO') {
-          mensagemErro = 'Sua conta foi desativada. Contate o administrador.';
-        } else {
-          switch (error.code) {
-            case 'auth/user-not-found':
-              mensagemErro = 'Email não cadastrado. Faça seu cadastro primeiro.';
-              break;
-            case 'auth/wrong-password':
-              mensagemErro = 'Senha incorreta. Tente novamente.';
-              break;
-            case 'auth/invalid-email':
-              mensagemErro = 'Email inválido. Verifique o formato.';
-              break;
-            case 'auth/user-disabled':
-              mensagemErro = 'Esta conta foi desativada.';
-              break;
-            case 'auth/too-many-requests':
-              mensagemErro = 'Muitas tentativas. Tente novamente mais tarde.';
-              break;
-          }
-        }
-        
-        mostrarNotificacao({
-          tipo: 'erro',
-          titulo: '❌ Erro no Login',
-          mensagem: mensagemErro,
-          duracao: 8000
-        });
-      });
-  } else {
+    let mensagemErro = 'Falha no login. Tente novamente.';
+    if (error.code === 'auth/user-not-found') mensagemErro = 'Email não cadastrado.';
+    if (error.code === 'auth/wrong-password') mensagemErro = 'Senha incorreta.';
+    if (error.code === 'auth/too-many-requests') mensagemErro = 'Muitas tentativas. Tente mais tarde.';
+
     mostrarNotificacao({
       tipo: 'erro',
-      titulo: '❌ Erro de Conexão',
-      mensagem: 'Firebase não disponível. Use usuários demo.',
+      titulo: '❌ Erro no Login',
+      mensagem: mensagemErro,
       duracao: 8000
     });
   }
@@ -2524,6 +2459,7 @@ window.cleanHelmetHybrid = {
 };
 
 console.log('🚀 Clean Helmet Sistema Híbrido v5.0 COMPLETO carregado com sucesso');
+
 
 
 
