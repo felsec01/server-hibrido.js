@@ -171,28 +171,46 @@ app.use(
       directives: {
         "default-src": ["'self'"],
 
+        // Scripts externos necessários
         "script-src": [
-  "'self'",
-  "https://www.gstatic.com",
-  "https://www.googleapis.com",
-  "https://sdk.mercadopago.com",
-  "https://*.firebaseio.com"
-],
-"connect-src": [
-  "'self'",
-  "https://www.googleapis.com",
-  "https://www.gstatic.com",
-  "https://api.mercadopago.com",
-  "https://sdk.mercadopago.com",
-  "https://*.firebaseio.com",
-  process.env.SERVER_URL
-],
-"frame-src": [
-  "'self'",
-  "https://sdk.mercadopago.com",
-  "https://*.firebaseio.com"
-]
+          "'self'",
+          "https://www.gstatic.com",
+          "https://www.googleapis.com",
+          "https://sdk.mercadopago.com",
+          "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com" // 🔗 Firebase Realtime DB
+        ],
+        "script-src-attr": ["'unsafe-inline'"],
 
+        // Estilos e fontes
+        "style-src": [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com"
+        ],
+        "font-src": [
+          "'self'",
+          "https://fonts.gstatic.com"
+        ],
+
+        // Conexões externas (API, WebSocket, Firebase, MercadoPago, Backend)
+        "connect-src": [
+          "'self'",
+          "https://www.googleapis.com",
+          "https://www.gstatic.com",
+          "https://api.mercadopago.com",
+          "https://sdk.mercadopago.com",
+          "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com", // 🔗 Firebase Realtime DB
+          process.env.SERVER_URL
+        ],
+
+        // Imagens
+        "img-src": ["'self'", "data:", "https:"],
+
+        // Frames (MercadoPago checkout)
+        "frame-src": [
+          "'self'",
+          "https://sdk.mercadopago.com"
+        ]
       }
     }
   })
@@ -908,6 +926,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
