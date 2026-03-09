@@ -172,41 +172,27 @@ app.use(
         "default-src": ["'self'"],
 
         "script-src": [
-          "'self'",
-          "https://www.gstatic.com",
-          "https://www.googleapis.com",
-          "https://sdk.mercadopago.com",
-          "https://*.firebaseio.com" // 🔗 libera todos subdomínios Firebase
-        ],
-        "script-src-attr": ["'unsafe-inline'"],
+  "'self'",
+  "https://www.gstatic.com",
+  "https://www.googleapis.com",
+  "https://sdk.mercadopago.com",
+  "https://*.firebaseio.com"
+],
+"connect-src": [
+  "'self'",
+  "https://www.googleapis.com",
+  "https://www.gstatic.com",
+  "https://api.mercadopago.com",
+  "https://sdk.mercadopago.com",
+  "https://*.firebaseio.com",
+  process.env.SERVER_URL
+],
+"frame-src": [
+  "'self'",
+  "https://sdk.mercadopago.com",
+  "https://*.firebaseio.com"
+]
 
-        "style-src": [
-          "'self'",
-          "'unsafe-inline'",
-          "https://fonts.googleapis.com"
-        ],
-        "font-src": [
-          "'self'",
-          "https://fonts.gstatic.com"
-        ],
-
-        "connect-src": [
-          "'self'",
-          "https://www.googleapis.com",
-          "https://www.gstatic.com",
-          "https://api.mercadopago.com",
-          "https://sdk.mercadopago.com",
-          "https://*.firebaseio.com", // 🔗 libera conexões Firebase
-          process.env.SERVER_URL
-        ],
-
-        "img-src": ["'self'", "data:", "https:"],
-
-        "frame-src": [
-          "'self'",
-          "https://sdk.mercadopago.com",
-          "https://*.firebaseio.com" // 🔗 libera frames Firebase
-        ]
       }
     }
   })
@@ -922,6 +908,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
