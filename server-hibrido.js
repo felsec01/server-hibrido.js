@@ -45,15 +45,8 @@ app.use(rateLimit({
 app.use(express.static(path.join(__dirname, "public")));
 
 // ===== FIREBASE REALTIME DATABASE =====
-const admin = require("firebase-admin");
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com"
-});
-
-console.log("✅ Firebase inicializado com projeto:", serviceAccount.project_id);
+const admin = require("./firebase-admin");
+console.log("🔗 Firebase Admin carregado, projeto:", admin.app().options.projectId);
 
 // ===== ROTAS DE TESTE FIREBASE =====
 app.get("/api/test-firebase", async (req, res) => {
@@ -929,6 +922,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
