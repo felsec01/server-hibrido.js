@@ -139,12 +139,6 @@ const logger = winston.createLogger({
   ]
 });
 
-// ===== MIDDLEWARES DE SEGURANÇA E PERFORMANCE =====
-app.use(cors()); // libera CORS básico
-app.use(compression()); // compressão gzip
-app.use(express.json({ limit: '10mb' })); // parse JSON com limite
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // parse URL-encoded
-
 // Logging com Morgan integrado ao Winston
 app.use(morgan('combined', {
   stream: {
@@ -171,20 +165,21 @@ app.use(
       directives: {
         "default-src": ["'self'"],
 
-        // Scripts externos necessários
+        // Scripts externos e locais necessários
         "script-src": [
-          "'self'",
+          "'self'",                        // permite scripts locais
+          "'unsafe-inline'",                // permite inline scripts do painel admin
           "https://www.gstatic.com",
           "https://www.googleapis.com",
           "https://sdk.mercadopago.com",
-          "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com" // 🔗 Firebase Realtime DB
+          "https://*.firebaseio.com"        // 🔗 libera todos subdomínios Firebase
         ],
         "script-src-attr": ["'unsafe-inline'"],
 
         // Estilos e fontes
         "style-src": [
           "'self'",
-          "'unsafe-inline'",
+          "'unsafe-inline'",                // permite estilos inline
           "https://fonts.googleapis.com"
         ],
         "font-src": [
@@ -199,7 +194,7 @@ app.use(
           "https://www.gstatic.com",
           "https://api.mercadopago.com",
           "https://sdk.mercadopago.com",
-          "https://cleanhelmet-e55b7-default-rtdb.firebaseio.com", // 🔗 Firebase Realtime DB
+          "https://*.firebaseio.com",       // 🔗 libera todos subdomínios Firebase
           process.env.SERVER_URL
         ],
 
@@ -974,6 +969,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
