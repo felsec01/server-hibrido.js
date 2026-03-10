@@ -386,6 +386,22 @@ app.get('/api/health', (req, res) => {
   res.json(healthData);
 });
 
+// ===== ROTA PARA PROMOVER USUÁRIO =====
+app.post("/api/promote", authenticateToken, async (req, res) => {
+  const { email, role } = req.body; // role pode ser "admin", "tecnico", "dev"
+  try {
+    const userRecord = await admin.auth().getUserByEmail(email);
+    await admin.auth().setCustomUserClaims(userRecord.uid, { cargo: role });
+
+    res.json({
+      success: true,
+      message: `Cargo '${role}' atribuído ao usuário ${email}`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ===== ROTAS DE AUTENTICAÇÃO =====
 app.get("/api/validate", authenticateToken, (req, res) => {
   res.json({
@@ -926,6 +942,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
