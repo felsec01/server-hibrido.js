@@ -890,6 +890,38 @@ cron.schedule('* * * * *', () => {
   updateSystemStats();
 });
 
+// Sincronização de claims com banco (diária às 3:00)
+cron.schedule('0 3 * * *', async () => {
+  console.log("🔄 Iniciando sincronização de cargos com claims Firebase...");
+
+  try {
+    const snapshot = await admin.database().ref("usuarios").once("value");
+    const usuarios = snapshot.val();
+
+    if (!usuarios) {
+      console.log("Nenhum usuário encontrado no Realtime Database.");
+      return;
+    }
+
+    for (const uid in usuarios) {
+      const usuario = usuarios[uid];
+      const cargo = usuario.cargo;
+
+      if (!cargo) {
+        console.warn(`Usuário ${uid} sem cargo definido, ignorando...`);
+        continue;
+      }
+
+      await admin.auth().setCustomUserClaims(uid, { cargo });
+      console.log(`✅ Claims sincronizados para ${usuario.email} (${cargo})`);
+    }
+
+    console.log("🎯 Sincronização concluída!");
+  } catch (error) {
+    console.error("❌ Erro na sincronização de claims:", error);
+  }
+});
+
 // ===== INICIALIZAÇÃO DO SERVIDOR =====
 server.listen(PORT, () => {
   const startMessage = `
@@ -942,6 +974,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
