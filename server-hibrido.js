@@ -765,6 +765,32 @@ app.post('/api/payments/create', async (req, res) => {
   }
 });
 
+// Criar pagamento PIX direto (QR Code)
+app.post("/api/pix", async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    const payment = await mercadopago.payment.create({
+      transaction_amount: parseFloat(amount),
+      description: "Ciclo de Desinfecção Clean Helmet",
+      payment_method_id: "pix",
+      payer: {
+        email: "cliente@exemplo.com" // pode ser dinâmico
+      }
+    });
+
+    res.json({
+      id: payment.body.id,
+      status: payment.body.status,
+      qrCode: payment.body.point_of_interaction.transaction_data.qr_code,
+      qrCodeBase64: payment.body.point_of_interaction.transaction_data.qr_code_base64,
+      expiration: payment.body.date_of_expiration
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao gerar PIX", details: error.message });
+  }
+});
+
 
 // ===== ROTAS MAQUINA =====
 
@@ -969,6 +995,7 @@ function gracefulShutdown(signal) {
 
 
 module.exports = { app, server, io, logger };
+
 
 
 
